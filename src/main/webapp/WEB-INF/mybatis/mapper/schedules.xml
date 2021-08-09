@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="euc-kr" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+					 "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.mycompany.webapp.dao.SchedulesDao">
+
+	<select id="selectToDoList" resultType="schedule"
+		parameterType="schedule">
+		select schedule_id, schedule_user_id, schedule_content,
+		schedule_state, schedule_regdate
+		from schedules
+		where
+		str_to_date(schedule_regdate,'%Y-%m-%d')=str_to_date(#{schedule_regdate},'%Y-%m-%d')
+		and
+		schedule_user_id=#{schedule_user_id}
+	</select>
+
+	<insert id="insertNewToDoList" parameterType="schedule">
+		insert into
+		schedules (schedule_user_id,
+		schedule_content,
+		schedule_state,
+		schedule_regdate) values
+		(#{schedule_user_id}, #{schedule_content},
+		#{schedule_state}, #{schedule_regdate})
+	</insert>
+
+	<update id="updateToDoList" parameterType="schedule">
+		update schedules
+		set
+		schedule_state=#{schedule_state}
+		where schedule_id=#{schedule_id}
+	</update>
+
+	<delete id="deleteToDoList" parameterType="int">
+		delete from schedules
+		where schedule_id=#{schedule_id}
+	</delete>
+</mapper>

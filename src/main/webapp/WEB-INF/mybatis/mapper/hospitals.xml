@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="euc-kr" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+					 "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+					 
+<mapper namespace="com.mycompany.webapp.dao.HospitalsDao">
+
+	<select id="getCount" resultType="int">
+		<if test='uauth == "ROLE_DOCTOR"'>
+			select hospital_doctors
+		</if>
+		<if test='uauth == "ROLE_NURSE"'>
+			select hospital_nurses
+		</if>
+		<if test='uauth == "ROLE_INSPECTOR"'>
+			select hospital_inspectors
+		</if>
+		from hospitals
+		where hospital_id = #{hcode}
+	</select>
+
+	<update id="updateUsercount">
+		update hospitals
+		<if test='uauth == "ROLE_DOCTOR"'>
+			set hospital_doctors = hospital_doctors + 1
+		</if>
+		<if test='uauth == "ROLE_NURSE"'>
+			set hospital_nurses= hospital_nurses + 1
+		</if>
+		<if test='uauth == "ROLE_INSPECTOR"'>
+			set hospital_inspectors = hospital_inspectors + 1
+		</if>
+		where hospital_id = #{hcode}
+	</update>
+	
+	<select id="getHname" resultType="String">
+		select hospital_name
+		from hospitals
+		where hospital_id = #{hid}
+	</select>
+	
+	<select id="getHospital" resultType="hospital">
+		select hospital_name, hospital_address, hospital_url, hospital_lat, hospital_long
+		from hospitals
+		where hospital_id = #{hid}
+	</select>
+</mapper>

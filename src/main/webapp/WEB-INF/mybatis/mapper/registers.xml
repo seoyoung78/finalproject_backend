@@ -1,0 +1,269 @@
+<?xml version="1.0" encoding="euc-kr" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+					 "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.mycompany.webapp.dao.RegistersDao">
+	<!-- 종현 -->
+	<!-- Create -->
+
+	<insert id="insertNewRegister" parameterType="register">
+		insert into
+		registers
+		(
+		register_patient_id, register_user_id,
+		register_regdate,
+		register_date,
+		register_memo,
+		register_communication,
+		register_state)
+		values
+		(
+		#{register_patient_id},
+		#{register_user_id},
+		now(), #{register_date},
+		#{register_memo}, #{register_communication},
+		<if test="register_state==''">
+			"대기"
+		</if>
+		<if test="register_state!=''">
+			#{register_state}
+		</if>
+		)
+	</insert>
+
+	<insert id="insertNewRegister2" parameterType="register">
+		insert into
+		registers
+		(
+		register_patient_id, register_user_id,
+		register_regdate,
+		register_date,
+		register_starttime,
+		register_memo,
+		register_communication,
+		register_state)
+		values
+		(
+		#{register_patient_id},
+		#{register_user_id},
+		now(), #{register_date},
+		null,
+		#{register_memo},
+		#{register_communication},
+		"대기"
+		)
+	</insert>
+
+	<!-- Read -->
+
+	<!-- 전부 불러오기 -->
+	<select id="selectAllRegisters" resultType="register">
+		select register_id,
+		register_patient_id, register_user_id,
+		register_regdate, register_date,
+		register_starttime,
+		register_memo, register_communication,
+		register_state
+		from registers
+	</select>
+
+	<!-- 해달 날짜 가져오기 -->
+
+	<select id="selectRegistersByDate" resultType="register">
+		select r.register_id, r.register_patient_id,
+		r.register_user_id,
+		r.register_regdate, r.register_date,
+		r.register_starttime,
+		r.register_memo, r.register_communication,
+		r.register_state,
+		p.patient_name, p.patient_ssn, p.patient_sex,
+		p.patient_tel,
+		u.user_name
+		from registers r, patients p, users u
+		<if test='state=="" '>
+			where
+			str_to_date(register_date,
+			'%Y-%m-%d')=str_to_date(#{register_date},
+			'%Y-%m-%d')
+			and
+			register_patient_id=patient_id
+			and
+			register_user_id=user_id
+			order by
+			register_date asc
+		</if>
+		<if test='state!="" '>
+			where
+			str_to_date(register_date,
+			'%Y-%m-%d')=str_to_date(#{register_date},
+			'%Y-%m-%d')
+			and
+			register_patient_id=patient_id
+			and
+			register_user_id=user_id
+			and
+			register_state=#{state}
+			order by register_date asc
+		</if>
+	</select>
+
+	<!-- 해달 날짜 타임 테이블 가져오기 -->
+
+	<select id="selectRegistersByDateForTable" resultType="register">
+		select register_id, register_patient_id,
+		register_user_id,
+		register_regdate,
+		register_date,
+		register_starttime,
+		register_memo,
+		register_communication,
+		register_state,
+		patient_name, patient_ssn,
+		patient_sex,
+		patient_tel,
+		user_name
+		from (
+		select
+		r.register_id, r.register_patient_id,
+		r.register_user_id,
+		r.register_regdate, r.register_date,
+		r.register_starttime,
+		r.register_memo, r.register_communication,
+		r.register_state,
+		p.patient_name, p.patient_ssn, p.patient_sex,
+		p.patient_tel,
+		u.user_name
+		from registers r, patients p, users u
+		where
+		str_to_date(register_date,
+		'%Y-%m-%d')=str_to_date(#{register_date},
+		'%Y-%m-%d')
+		and
+		register_patient_id=patient_id
+		and
+		register_user_id=user_id
+		order by
+		register_regdate desc
+		limit 18446744073709551615
+		) t
+		group by register_date, register_user_id 
+	</select>
+
+	<!-- 의사별 한달치 접수 완료 불러오기 -->
+	<select id="selectRegisterByDoctor"
+		resultType="registersCountByDate">
+		select DATE_FORMAT(register_starttime, "%d") as date,
+		count(*) as count
+		from registers
+		where register_state="완료"
+		and
+		register_user_id=#{register_user_id}
+		and
+		year(register_starttime)=year(#{register_date})
+		and
+		month(register_starttime)=month(#{register_date})
+		group by
+		DATE_FORMAT(register_starttime, "%d")
+		order by date asc
+
+	</select>
+
+	<select id="checkRegister" parameterType="register"
+		resultType="int">
+		select count(*) from registers
+		where
+		register_date=#{register_date}
+		and register_user_id=#{register_user_id}
+		and (register_state="대기" or register_state="완료")
+	</select>
+
+	<select id="checkSameRegister" parameterType="register"
+		resultType="int">
+		select count(*) from registers
+		where
+		register_date=#{register_date}
+		and register_user_id=#{register_user_id}
+		and register_patient_id=#{register_patient_id}
+		and register_state="대기"
+	</select>
+
+
+	<!-- Update -->
+
+	<update id="updateRegister" parameterType="register">
+		update registers
+		set
+		register_patient_id=#{register_patient_id},
+		register_user_id=#{register_user_id},
+		register_date=#{register_date},
+		register_memo=#{register_memo},
+		register_communication=#{register_communication},
+		register_state=#{register_state}
+		where register_id=#{register_id}
+	</update>
+
+
+	<update id="updateStateRegister" parameterType="register">
+		update registers
+		set
+		register_starttime=now(),
+		register_state=#{register_state}
+		where
+		register_id=#{register_id}
+	</update>
+	<!-- Delete -->
+
+	<delete id="deleteRegister" parameterType="int">
+		delete from registers
+		where register_id=#{register_id}
+	</delete>
+
+
+	<!-- 데이터 분석실 -->
+
+	<!-- 1번 -->
+	<select id="selectThreeMonths" resultType="register">
+		select register_id,
+		register_starttime
+		from registers
+		where
+		date(register_starttime) &gt;
+		date_format(date_add(now(), interval -2
+		month), '%Y-%m-01') and
+		date(register_starttime) &lt;= last_day(now())
+		and register_state="완료"
+	</select>
+
+	<!-- 2번 -->
+	<select id="selectRegistersState" resultType="register">
+		select register_id,
+		register_regdate,
+		register_state
+		from registers
+		where
+		YEAR(register_regdate)=YEAR(CURDATE())
+	</select>
+
+	<!-- 3번 -->
+	<select id="selectPatientsByDays" resultType="register">
+		select
+		r.register_id, r.register_patient_id,
+		r.register_starttime,
+		p.patient_ssn
+		from registers r, patients p
+		where
+		YEAR(r.register_starttime) = YEAR(CURDATE())
+		and register_state="완료"
+		and register_patient_id=patient_id
+	</select>
+
+	<!-- 4번 -->
+	<select id="selectQuatersState" resultType="register">
+		select register_id,
+		register_starttime
+		from registers
+		where
+		YEAR(register_starttime)=YEAR(CURDATE())
+		and register_state="완료"
+	</select>
+</mapper>

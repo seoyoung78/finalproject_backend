@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="euc-kr" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+					 "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.mycompany.webapp.dao.PatientsDao">
+<!-- 종현 -->
+	<!-- 전체 환자 불러오기 -->
+	<select id="selectAllPatients" resultType="patient">
+		select patient_id,
+		patient_name,
+		patient_ssn, patient_sex, patient_tel
+		patient_zipcode,
+		patient_address, patient_detailaddress1, patient_detailaddress2,
+		patient_regdate
+		from patients
+	</select>
+	
+<!-- 서영 -->
+	<!-- 전체 환자 목록 -->
+	<select id="selectPatients" resultType="patient">
+		select patient_id, 
+			   patient_name, 
+			   patient_ssn,
+			   patient_sex, 
+			   patient_tel, 
+			   patient_zipcode,
+			   patient_address, 
+			   patient_detailaddress1, 
+			   patient_detailaddress2, 
+			   patient_regdate
+		from patients
+		<if test='keyword != ""'>
+			where patient_name regexp #{keyword}
+				or patient_ssn like concat(#{keyword}, '%')
+		</if>
+		order by patient_id asc
+	</select>
+	
+	<update id="updatePatient" parameterType="patient">
+		update patients
+		set patient_name = #{patient_name},
+			patient_ssn = #{patient_ssn},
+			patient_sex = #{patient_sex},
+			patient_tel = #{patient_tel},
+			patient_zipcode = #{patient_zipcode},
+			patient_address = #{patient_address},
+			patient_detailaddress1 = #{patient_detailaddress1},
+			patient_detailaddress2 = #{patient_detailaddress2}
+		where patient_id = #{patient_id}				
+	</update>
+	
+	<insert id="insertPatient" parameterType="patient">
+		insert into patients
+		values (#{patient_id},
+				#{patient_name},
+				#{patient_ssn},
+				#{patient_sex},
+				#{patient_tel},
+				#{patient_zipcode},
+				#{patient_address},
+				#{patient_detailaddress1},
+				#{patient_detailaddress2},
+				now())
+	</insert>
+	
+	<!-- 주민등록번호 중복 검사 -->
+	<select id="selectUnique" resultType="int">
+		select count(*)
+		from patients
+		where patient_ssn like concat('%', #{patient_ssn2})
+	</select>
+
+	<select id="getCount" resultType="int">
+		select count(*)
+		from patients
+	</select>
+</mapper>

@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+					 "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+					 
+<mapper namespace="com.mycompany.webapp.dao.UsersDao">
+
+<!-- 종현 -->
+	
+	<!-- 의사 전부 불러오기 -->
+	<select id="selectAllDoctors" resultType="user">
+		select user_id,
+		user_hospital_id, user_password, user_name,
+		user_tel, user_email, user_sex,
+		user_zipcode, user_address, user_detailaddress1, user_detailaddress2,
+		user_regdate, user_enabled, user_authority
+		from users
+		where (user_authority="ROLE_DOCTOR"
+		or user_authority="ROLE_MASTER")
+		and user_enabled=1
+	</select>
+	
+	
+<!-- 서영 -->
+
+	<!-- 전체 직원 불러오기 -->
+	<select id="selectAllUser" resultType="user">
+		select user_id, user_hospital_id, user_password, user_name,
+			user_tel, user_email, user_sex, user_ssn,
+			user_zipcode, user_address, user_detailaddress1, user_detailaddress2,
+			user_regdate, user_enabled, user_authority
+		from users
+		where not user_authority = "ROLE_MASTER"
+		order by user_regdate asc
+	</select>
+	
+	<!-- 검색 직원 목록 가져오기 -->
+	<select id="selectUsers" resultType="user">
+		select user_id, user_hospital_id, user_password, user_name,
+			user_tel, user_email, user_sex, user_ssn,
+			user_zipcode, user_address, user_detailaddress1, user_detailaddress2,
+			user_regdate, user_enabled, user_authority
+		from users
+		where not user_authority = "ROLE_MASTER"
+		<if test='keyword != "" and condition != "1" and condition != "0" and condition != "all"'>
+			and (user_name regexp #{keyword}
+				or user_ssn like concat(#{keyword},'%'))
+				and user_authority = #{condition}
+		</if>
+		<if test='keyword != "" and condition == "all"'>
+			and user_name regexp #{keyword}			
+			or user_ssn like concat(#{keyword},'%')
+		</if>		
+		<if test='keyword != "" and condition == "1"'>
+			and (user_name regexp #{keyword}
+				or user_ssn like concat(#{keyword},'%'))
+				and user_enabled = 1
+		</if>
+		<if test='keyword != "" and condition == "0"'>
+			and (user_name regexp #{keyword}
+				or user_ssn like concat(#{keyword},'%'))
+				and user_enabled = 0
+		</if>
+		<if test='keyword == "" and condition == "1"'>
+			and user_enabled = 1
+		</if>
+		<if test='keyword == "" and condition == "0"'>
+			and user_enabled = 0
+		</if>
+		<if test='keyword == "" and condition != "1" and condition != "0" and condition != "all"'>
+			and user_authority = #{condition}
+		</if>
+		order by user_regdate asc
+	</select>
+	
+	<!-- 직원 수정 -->
+	<update id="updateUser" parameterType="user">
+		update users
+		set user_name = #{user_name}, 
+			user_tel = #{user_tel}, 
+			user_email = #{user_email}, 
+			user_sex = #{user_sex},
+			user_zipcode = #{user_zipcode}, 
+			user_address = #{user_address}, 
+			user_detailaddress1 = #{user_detailaddress1},
+			user_detailaddress2 = #{user_detailaddress2}, 
+			user_authority = #{user_authority},
+			user_ssn = #{user_ssn}
+		<if test='user_password != null'>
+			, user_password = #{user_password}
+		</if>
+		where user_id = #{user_id}
+	</update>
+	
+	<!-- 직원 활성화 및 비활성화 -->
+	<update id="updateEnabled">
+		update users
+		<if test='user_enabled == 1'>
+			set user_enabled = 0
+		</if>
+		<if test='user_enabled == 0'>
+			set user_enabled = 1
+		</if>
+		where user_id = #{user_id}
+	</update>
+	
+	<!-- 직원 삭제 -->
+	<!-- <delete id="deleteUser" parameterType="String">
+		delete from users
+		where user_id = #{user_id}
+	</delete> -->
+	
+	<!-- 직원 등록 -->
+	<insert id="insertUser">
+		insert into users
+		values (#{user_id}, 
+				#{user_hospital_id}, 
+				#{user_password}, 
+				#{user_name}, 
+				#{user_tel}, 
+				#{user_email}, 
+				#{user_sex}, 
+				#{user_zipcode}, 
+				#{user_address}, 
+				#{user_detailaddress1}, 
+				#{user_detailaddress2}, 
+				now(), 
+				1, 
+				#{user_authority},
+				#{user_ssn})
+	</insert>
+	
+	<!-- 주민등록번호 중복 검사 -->
+	<select id="selectSsnUnique" resultType="int">
+		select count(*)
+		from users
+		where user_ssn like concat('%', #{user_ssn2})
+	</select>
+
+	<!-- 회원 정보 읽기 -->
+	<select id="selectUser" resultType="user">
+		select user_id, user_hospital_id, user_password, user_name,
+			user_tel, user_email, user_sex, user_ssn,
+			user_zipcode, user_address, user_detailaddress1, user_detailaddress2,
+			user_regdate, user_enabled, user_authority
+		from users
+		where user_id = #{user_id}
+	</select>
+	
+	<!--  지현 -->
+	<select id="getBloodInspectorId" resultType="String">	
+		select user_id
+		from users
+		where 
+		user_enabled = 1
+		and 
+		user_hospital_id = "138010"
+		and
+		USER_AUTHORITY = "ROLE_INSPECTOR"
+		and
+		user_id between "I138010001" and "I138010006"
+	</select>
+	<select id="getImgInspectorId" resultType="String">	
+		select user_id
+		from users
+		where
+		user_enabled = 1
+		and 
+		user_hospital_id = "138010"
+		and
+		USER_AUTHORITY = "ROLE_INSPECTOR"
+		and
+		user_id between "I138010007" and "I138010012"
+	</select>
+	
+</mapper>

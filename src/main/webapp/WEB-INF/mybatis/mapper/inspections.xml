@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="euc-kr" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+					 "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+					 
+<mapper namespace="com.mycompany.webapp.dao.InspectionsDao">
+	<!-- 빛나 시작 -->
+	<select id="selectInspections" resultType="inspection" parameterType="int">
+		select i.inspection_id as inspection_id, i.inspection_result as inspection_result, i.inspection_date as inspection_date, i.inspection_lab as inspection_lab, i.inspection_state as inspection_state, i.inspection_inspector_id as inspection_inspector_id,
+				u1.user_name as inspection_doctor_name, u2.user_name as inspection_inspector_name, 
+				l.inspection_list_category as inspection_list_category, l.inspection_list_specimen as inspection_list_specimen, l.inspection_list_name as inspection_list_name, l.inspection_list_reference as inspection_list_reference, l.inspection_list_container as inspeciton_list_container,
+				p.patient_name
+		from inspections i, inspection_lists l, users u1, users u2, patients p
+		where inspection_treatment_id = #{treatmentId}
+			and inspection_inspection_list_id = inspection_list_id
+			and inspection_doctor_id = u1.user_id
+			and inspection_inspector_id = u2.user_id
+			and inspection_patient_id = patient_id
+		order by inspection_list_category
+	</select>
+	
+	<update id="updateState">
+		update inspections set
+			inspection_state = #{state}
+			<if test='state == "완료"'>
+				, inspection_date = now()
+			</if>
+		where inspection_id = #{inspectionId}
+	</update>
+	<update id="updateResult">
+		update inspections set
+			inspection_result = #{inspectionResult}
+		where inspection_id = #{inspectionId}
+	</update>
+	
+	<!-- 빛나 끝 -->
+
+	
+<!-- 지현 시작 -->
+	<select id="selectByTreatmentInspection" resultType="inspection">
+		select
+			i.inspection_date,i.inspection_result,
+	        il.inspection_list_name, il.inspection_list_category, il.inspection_list_reference,
+	        u1.user_name as inspection_inspector_name,i.INSPECTION_TREATMENT_ID,i.INSPECTION_INSPECTION_LIST_ID, i.inspection_patient_id,
+	        i.inspection_id,i.inspection_state,i.INSPECTION_LAB,u2.user_name as inspection_doctor_name
+	    from 
+			inspections i, inspection_lists il, users u1, users u2
+	    where 
+			i.INSPECTION_INSPECTION_LIST_ID = il.INSPECTION_LIST_ID 
+				and
+			i.INSPECTION_INSPECTOR_ID = u1.USER_ID
+				and
+			i.INSPECTION_DOCTOR_ID = u2.user_id
+				and
+			i.INSPECTION_TREATMENT_ID = #{treatment_id}
+	</select>
+	
+	<insert id="insertInspections" parameterType="inspection">
+		insert into inspections 
+				(inspection_patient_id,
+				inspection_doctor_id,
+				inspection_inspector_id,
+				inspection_treatment_id,
+				inspection_inspection_list_id,
+				inspection_result,
+				inspection_lab,
+				inspection_state)
+	
+		values (#{inspection_patient_id},
+				#{inspection_doctor_id},
+				#{inspection_inspector_id},
+				#{inspection_treatment_id},
+				#{inspection_inspection_list_id},
+				#{inspection_result},
+				"혈액검사실",
+				#{inspection_state})
+		
+	</insert>
+	
+		<insert id="insertInspections2" parameterType="inspection">
+		insert into inspections 
+				(inspection_patient_id,
+				inspection_doctor_id,
+				inspection_inspector_id,
+				inspection_treatment_id,
+				inspection_inspection_list_id,
+				inspection_result,
+				inspection_lab,
+				inspection_state)
+
+		values (#{inspection_patient_id},
+				#{inspection_doctor_id},
+				#{inspection_inspector_id},
+				#{inspection_treatment_id},
+				#{inspection_inspection_list_id},
+				#{inspection_result},
+				"영상검사실",
+				#{inspection_state})
+		
+
+	</insert>
+<!-- 지현 끝 -->	
+</mapper>

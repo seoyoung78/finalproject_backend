@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="euc-kr" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+					 "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+					 
+<mapper namespace="com.mycompany.webapp.dao.DrugsInjectionsListsDao">
+
+<!-- 지현 시작 -->
+	<select id="selectByDruglist" resultType="drugsInjectionsList">
+		select
+			drug_injection_list_name, drug_injection_list_id, drug_injection_list_category
+		from
+			drugs_injections_lists
+		<if test='keyword == "" and condition == ""'>	
+		</if>		
+		<if test='keyword != "" and condition == ""'>
+		where
+		drug_injection_list_name LIKE CONCAT('%',#{keyword},'%')
+		</if>
+		<if test='keyword != "" and condition == "약품"'>
+		where
+		drug_injection_list_name LIKE CONCAT('%',#{keyword},'%')
+		</if>
+		<if test='keyword == "" and condition == "약품(내복약)"'>
+		where
+		drug_injection_list_category=#{condition}
+		</if>
+		<if test='keyword != "" and condition == "약품(내복약)"'>
+		where
+		drug_injection_list_name LIKE CONCAT('%',#{keyword},'%')
+		and drug_injection_list_category=#{condition}
+		</if>
+		<if test='keyword == "" and condition == "약품(외용약)"'>
+		where
+		drug_injection_list_category=#{condition}
+		</if>
+		<if test='keyword != "" and condition == "약품(외용약)"'>
+		where
+		drug_injection_list_name LIKE CONCAT('%',#{keyword},'%')
+		and drug_injection_list_category=#{condition}
+		</if>
+		<if test='keyword == "" and condition == "주사"'>
+		where
+		drug_injection_list_category=#{condition}
+		</if>
+		<if test='keyword != "" and condition == "주사"'>
+		where
+		drug_injection_list_name LIKE CONCAT('%',#{keyword},'%')
+		and drug_injection_list_category=#{condition}
+		</if>
+	</select>
+	
+<!-- <select id="selectByDruglist" resultType="drugsInjectionsList">
+		select
+			drug_injection_list_name, drug_injection_list_id, drug_injection_list_category
+		from
+			drugs_injections_lists
+		<if test='keyword==""'>
+		
+		</if>
+		<if test='keyword!=""'>
+		where
+			drug_injection_list_name LIKE CONCAT('%',#{keyword},'%')
+		</if>
+		
+		
+	</select> -->
+	
+	<!-- 지현 끝 -->	
+	
+<!-- drug_injection_list_name LIKE '%'||#{keyword}||'%' or drug_injection_list_id LIKE '%'||#{keyword}||'%' or
+drug_injection_list_category LIKE '%'||#{keyword}||'%' -->
+</mapper>

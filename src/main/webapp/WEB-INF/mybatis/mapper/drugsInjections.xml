@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="euc-kr" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+					 "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+					 
+<mapper namespace="com.mycompany.webapp.dao.DrugsInjectionsDao">
+
+<!-- 지현 시작 -->	
+	<select id="selectByTreatmentDrugsInjection" resultType="drugsInjection">
+		select
+			d.drug_injection_drug_injection_list_id, 
+	        dl.drug_injection_list_name,
+	        dl.drug_injection_list_category,
+	        u.user_name,
+	        t.treatment_date,
+	        d.drug_injection_treatment_id,
+	        d.drug_injection_id,
+	        d.drug_injection_patient_id
+	   from
+			drugs_injections d,
+	        drugs_injections_lists dl,
+	        users u,
+	        treatments t
+		where
+			d.drug_injection_drug_injection_list_id = dl.drug_injection_list_id and
+	        d.drug_injection_id_doctor_id = u.user_id and
+	        d.drug_injection_treatment_id = t.treatment_id and
+	        d.drug_injection_treatment_id = #{treatment_id};
+	</select>
+	
+	<insert id="insertDrugsInjections" parameterType="drugsInjection">
+		insert into drugs_injections
+		(drug_injection_drug_injection_list_id,
+		drug_injection_treatment_id,
+		drug_injection_id_doctor_id,
+		drug_injection_patient_id,
+		drug_injection_regdate)
+		values (#{drug_injection_drug_injection_list_id},
+				#{drug_injection_treatment_id},
+				#{drug_injection_id_doctor_id},
+				#{drug_injection_patient_id},
+				now())
+	</insert>
+<!-- 지현 끝 -->		
+</mapper>

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="euc-kr" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+					 "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+					 
+<mapper namespace="com.mycompany.webapp.dao.InspectionImgsDao">
+	<!-- 빛나 시작 -->
+	<select id="selectInspectionImgs" resultType="inspectionImg" parameterType="int">
+		select inspection_img_id, inspection_img_oname, inspection_img_sname, inspection_img_type
+		from inspection_imgs
+		where inspection_img_inspection_id = #{inspectionId}
+		order by inspection_img_id
+	</select>
+	<insert id="insertImg" parameterType="inspectionImg">
+		insert into inspection_imgs (inspection_img_inspection_id, inspection_img_oname, inspection_img_sname, inspection_img_type)
+		values (#{inspection_img_inspection_id}, #{inspection_img_oname}, #{inspection_img_sname}, #{inspection_img_type})
+	</insert>
+	<delete id="deleteImg" parameterType="int">
+		delete from inspection_imgs 
+		where INSPECTION_IMG_INSPECTION_ID = #{inspectionId};
+	</delete>
+	<select id="selectByInspectionImgId" resultType="inspectionImg" parameterType="int">
+		select inspection_img_id, inspection_img_oname, inspection_img_sname, inspection_img_type
+		from inspection_imgs
+		where inspection_img_id = #{inspectionImgId}
+	</select>
+	
+	<!-- 빛나 끝 -->
+</mapper>

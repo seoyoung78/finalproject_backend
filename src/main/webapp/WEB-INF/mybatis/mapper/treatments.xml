@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="euc-kr" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+                "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.mycompany.webapp.dao.TreatmentsDao">
+
+
+<!-- 지현 시작 -->
+   
+   <!-- <select id="selectAllTreatment" resultType="treatment"> select treatment_id, 
+      treatment_register_id, treatment_patient_id, treatment_user_id, treatment_date, 
+      treatment_smemo, treatment_omemo, treatment_amemo, treatment_pmemo, treatment_communication, 
+      treatment_state, treatment_istate, treatment_type from treatments </select> -->
+
+
+   <select id="selectAllTreatment" resultType="treatment">
+      select
+      t.treatment_id,t.treatment_register_id, t.treatment_user_id,
+      t.treatment_patient_id,
+      r.register_communication, p.patient_name, p.patient_sex,p.patient_ssn,
+      r.register_starttime, t.treatment_state
+      from treatments t, registers r, patients p
+      where 
+      str_to_date(register_starttime,'%Y-%m-%d')=str_to_date(#{register_starttime},'%Y-%m-%d') 
+      and treatment_register_id = register_id 
+      and treatment_patient_id = patient_id 
+      <if test="state=='' and globalUid != 'D138010001'">
+      and treatment_user_id = #{globalUid}
+      </if> 
+      <if test="state!='' and globalUid != 'D138010001'">
+      and treatment_state=#{state}
+      and treatment_user_id = #{globalUid}
+      </if>   
+
+      <if test="state!='' and globalUid == 'D138010001'">
+      and treatment_state=#{state}
+      </if>   
+      order by register_starttime desc 
+   </select>
+   
+   <!--    <select id="selectAllTreatment" resultType="treatment">
+
+      select
+      t.treatment_id,t.treatment_register_id, t.treatment_user_id,
+      t.treatment_patient_id,
+      r.register_communication, p.patient_name, p.patient_sex,p.patient_ssn,
+      r.register_starttime, t.treatment_state
+      from treatments t, registers r, patients p
+      <if test='state=="" '>
+      where 
+      str_to_date(register_starttime,
+      '%Y-%m-%d')=str_to_date(#{register_starttime},
+      '%Y-%m-%d') and 
+      treatment_register_id = register_id 
+      and treatment_patient_id = patient_id;
+      </if> 
+      <if test='state!="" '>
+      where 
+      str_to_date(register_starttime,
+      '%Y-%m-%d')=str_to_date(#{register_starttime},
+      '%Y-%m-%d') and 
+      treatment_register_id = register_id 
+      and treatment_patient_id = patient_id
+      and treatment_state=#{state}
+      </if>
+   </select> -->
+
+   <update id="update" parameterType="treatment">
+
+      update 
+            treatments 
+      set 
+            treatment_smemo = #{treatment_smemo},treatment_omemo = #{treatment_omemo},
+            treatment_amemo = #{treatment_amemo},treatment_pmemo = #{treatment_pmemo},
+            treatment_communication = #{treatment_communication},
+            treatment_date=now(),
+            treatment_state="완료",
+            TREATMENT_TYPE = "0"      
+      where 
+            treatment_id=#{treatment_id};
+   </update>
+   
+   <update id="update1" parameterType="treatment">
+
+      update 
+            treatments 
+      set 
+            treatment_smemo = #{treatment_smemo},treatment_omemo = #{treatment_omemo},
+            treatment_amemo = #{treatment_amemo},treatment_pmemo = #{treatment_pmemo},
+            treatment_communication = #{treatment_communication},
+            treatment_date=now(),
+            treatment_state="완료",
+            TREATMENT_TYPE = "1"      
+      where 
+            treatment_id=#{treatment_id};
+   </update>
+   
+   <select id="selectByPatientId" resultType="treatment" parameterType="int">
+      select
+      t.treatment_id,
+      t.treatment_date,
+      u.user_name,
+      t.treatment_communication,
+      t.treatment_patient_id
+      from
+      treatments t, users u
+      where
+      t.treatment_user_id = u.user_id and
+      t.treatment_patient_id=#{treatment_patient_id}
+      order by t.treatment_date desc 
+   </select>
+
+   <!-- <select id="selectByTreatment" resultType="treatment"> select t.treatment_id, 
+      t.treatment_date, u.user_name, t.treatment_communication, t.treatment_patient_id 
+      from treatments t, users u where t.treatment_user_id = u.user_id and treatment_id=#{treatment_id} 
+      </select> -->
+
+   <select id="selectByTreatmentSoap" resultType="treatment" parameterType="int">
+      select
+      treatment_smemo,treatment_omemo,treatment_amemo,treatment_pmemo,treatment_communication,
+      treatment_id,treatment_patient_id,treatment_date,treatment_user_id,
+      treatment_register_id
+      from
+      treatments
+      where
+      treatment_id=#{treatment_id}
+   </select>
+   
+<!-- 지현 끝 -->   
+   
+<!-- 빛나 시작 -->
+   <select id="selectTreatments" resultType="treatment" parameterType="string">
+      select t.treatment_id, t.treatment_patient_id,
+      t.treatment_date,
+      t.treatment_communication, t.treatment_istate, t.treatment_type,
+      p.patient_name, p.patient_ssn, p.patient_sex
+      from treatments t, patients p
+      <if test='state=="" '>
+      where
+      treatment_patient_id = patient_id
+      and str_to_date(treatment_date, '%Y-%m-%d') =
+      str_to_date(#{treatmentDate}, '%Y-%m-%d')
+      </if>
+      <if test='state!="" '>
+      where
+      treatment_patient_id = patient_id
+      and str_to_date(treatment_date, '%Y-%m-%d') =
+      str_to_date(#{treatmentDate}, '%Y-%m-%d')
+      and treatment_istate = #{state}
+      </if>
+      and treatment_type = 1
+      order by treatment_id
+   </select>
+   
+   <update id="updateIstateW">
+      update treatments set
+      treatment_istate = "대기"
+      where treatment_id = #{treatmentId}
+   </update>
+   <update id="updateIstateI">
+      update treatments set
+      treatment_istate = "검사"
+      where treatment_id = #{treatmentId}
+   </update>
+   <update id="updateIstateC">
+      update treatments set
+      treatment_istate = "완료"
+      where treatment_id = #{treatmentId}
+   </update>
+
+
+<!-- 빛나 끝 -->
+
+
+   <!-- 진료 생성 -종현- -->
+   <insert id="insertNewTreatment" parameterType="register">
+      insert into
+      treatments
+      (
+      treatment_register_id,
+      treatment_patient_id,
+      treatment_user_id,
+      treatment_state,
+      treatment_istate
+      )
+      values
+      (
+      #{register_id},
+      #{register_patient_id},
+      #{register_user_id},
+      "대기",
+      "대기"
+      )
+   </insert>
+</mapper>
